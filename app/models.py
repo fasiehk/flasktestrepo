@@ -1,4 +1,7 @@
-from .__init__ import db  # Corrected import statement
+from flask_sqlalchemy import SQLAlchemy
+
+# Import db directly from app to avoid circular imports
+from . import db
 
 class URL(db.Model):
     __tablename__ = 'url'

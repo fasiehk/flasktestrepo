@@ -3,5 +3,4 @@ __pycache__/
 *.pyc
 instance/
 .webassets-cache
-.vercel
 .env

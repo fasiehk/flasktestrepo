@@ -1,6 +1,6 @@
 from flask import request, redirect, jsonify, Blueprint, render_template, url_for, flash, current_app
-from . import db
-from .models import URL
+from .models import URL  # Import only the model
+from . import db  # Import db instance
 import string
 import random
 
@@ -12,35 +12,35 @@ def generate_short_url(length=6):
 
 @shortener_bp.route('/', methods=['GET', 'POST'])
 def index():
-    with current_app.app_context():  # Ensure app context is active
-        if request.method == 'POST':
-            original_url = request.form.get('original_url')
-            custom_alias = request.form.get('custom_alias')
+    if request.method == 'POST':
+        original_url = request.form.get('original_url')
+        custom_alias = request.form.get('custom_alias')
 
-            if not original_url:
-                flash('Original URL is required!', 'error')
-                return redirect(url_for('shortener.index'))
-
-            # Check if custom alias is provided
-            if custom_alias:
-                existing_alias = URL.query.filter_by(custom_alias=custom_alias).first()
-                if existing_alias:
-                    flash('Custom alias already exists. Please choose another.', 'error')
-                    return redirect(url_for('shortener.index'))
-                short_url = custom_alias
-            else:
-                # Generate a random short URL
-                short_url = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
-
-            # Save to database
-            new_url = URL(original_url=original_url, short_url=short_url, custom_alias=custom_alias)
-            db.session.add(new_url)
-            db.session.commit()
-
-            flash(f'Shortened URL: {request.host_url}{short_url}', 'success')
+        if not original_url:
+            flash('Original URL is required!', 'error')
             return redirect(url_for('shortener.index'))
 
-        return render_template('index.html')
+        # Check if custom alias is provided
+        if custom_alias:
+            existing_alias = URL.query.filter_by(custom_alias=custom_alias).first()
+            if existing_alias:
+                flash('Custom alias already exists. Please choose another.', 'error')
+                return redirect(url_for('shortener.index'))
+            short_url = custom_alias
+        else:
+            # Generate a random short URL
+            short_url = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+            custom_alias = None  # Set custom_alias to None when not provided
+
+        # Save to database
+        new_url = URL(original_url=original_url, short_url=short_url, custom_alias=custom_alias)
+        db.session.add(new_url)
+        db.session.commit()
+
+        flash(f'Shortened URL: {request.host_url}{short_url}', 'success')
+        return redirect(url_for('shortener.index'))
+
+    return render_template('index.html')
 
 @shortener_bp.route('/shorten', methods=['POST'])
 def shorten_url():
